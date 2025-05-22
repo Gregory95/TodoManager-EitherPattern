@@ -106,6 +106,11 @@ public class AuthService(IAuthRepository authRepository, IMapper mapper, IConfig
 
         if (!await _authRepository.CheckUserPasswordAsync(user, message.Password))
         {
+            if (user.AccessFailedCount == 4)
+            {
+                await _authRepository.LockUserAccount(user);
+            }
+
             await _authRepository.UpdateLoginFailedAttempt(user);
 
             return Either<LoginResponseDto, ErrorResponse>.Failure(new ErrorResponse

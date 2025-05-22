@@ -82,4 +82,26 @@ public class AuthController(IAuthService service) : ControllerBase
             _ => BadRequest(result.Error),
         };
     }
+
+    [HttpPost("unlock-account")]
+    [ProducesResponseType(201)]
+    [ProducesResponseType(typeof(ErrorResponse), 400)]
+    [ProducesResponseType(typeof(ErrorResponse), 500)]
+    public async Task<ActionResult> UnlockUserAccountAsync([FromBody] UsernameRequstDto request)
+    {
+        var result = await _service.UnlockUserAsync(request.Username);
+
+        if (result.IsSuccess)
+        {
+            return Ok(result.Success);
+        }
+
+        return result.Error.Status switch
+        {
+            HttpStatusCode.NotFound => NotFound(result.Error),
+            HttpStatusCode.Unauthorized => Unauthorized(result.Error),
+            HttpStatusCode.Conflict => Conflict(result.Error),
+            _ => BadRequest(result.Error),
+        };
+    }
 }
